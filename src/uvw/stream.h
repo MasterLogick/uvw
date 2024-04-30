@@ -122,12 +122,11 @@ class stream_handle: public handle<T, U, listen_event, end_event, connect_event,
         // equivalent to EAGAIN/EWOULDBLOCK, it shouldn't be treated as an error
         // for we don't have data to emit though, it's fine to suppress it
 
+        ref.publish(data_event{std::move(data), static_cast<std::size_t>(nread)});
+        
         if(nread == UV_EOF) {
             // end of stream
             ref.publish(end_event{});
-        } else if(nread > 0) {
-            // data available
-            ref.publish(data_event{std::move(data), static_cast<std::size_t>(nread)});
         } else if(nread < 0) {
             // transmission error
             ref.publish(error_event(nread));
